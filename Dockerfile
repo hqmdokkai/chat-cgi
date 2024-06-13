@@ -1,21 +1,18 @@
-# Sử dụng image gốc từ Debian
-FROM debian:bookworm
+# Sử dụng Alpine Linux làm base image
+FROM alpine:latest
 
 # Cài đặt Apache và các gói phụ trợ
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y apache2 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get install -y python3
+RUN apk --no-cache add apache2 python3
 
 # Bật module CGI của Apache
-RUN a2enmod cgi
+RUN sed -i 's/#LoadModule cgid_module/LoadModule cgid_module/' /etc/apache2/httpd.conf
 
-# Sao chép các tập tin CGI vào container
+# Tạo thư mục cgi-bin và sao chép các tập tin CGI vào đó
+RUN mkdir /usr/lib/cgi-bin
 COPY cgi-bin/ /usr/lib/cgi-bin/
 
 # Thiết lập thư mục làm việc của Apache
-WORKDIR /var/www/html
+WORKDIR /var/www/localhost/htdocs
 
 # Khởi động Apache
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["httpd", "-D", "FOREGROUND"]

@@ -1,17 +1,19 @@
-# Sử dụng hình ảnh cơ bản của Python
-FROM python:3.9-slim
+# Sử dụng một hình ảnh Python cơ bản
+FROM python:latest
 
-# Thiết lập thư mục làm việc
-WORKDIR /app
+# Cài đặt Apache và các gói cần thiết
+RUN apt-get update && \
+    apt-get install -y apache2 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Sao chép các tệp của bạn vào container
-COPY . /app
+# Cấu hình Apache để hỗ trợ CGI và mod_cgi
+RUN a2enmod cgi
 
-# Mở cổng mà http.server sẽ sử dụng
-EXPOSE 8000
+# Sao chép các tệp CGI vào vị trí thích hợp
+COPY cgi-bin/ /usr/lib/cgi-bin/
 
-# Cài đặt quyền thực thi cho các script CGI
-RUN chmod +x /app/cgi-bin/*.py
+# Thiết lập thư mục làm việc mặc định cho Apache
+WORKDIR /var/www/html
 
-# Chạy http.server với hỗ trợ CGI
-CMD ["python", "-m", "http.server", "8000", "--cgi"]
+# Khởi động Apache khi container khởi chạy
+CMD ["apache2ctl", "-D", "FOREGROUND"]

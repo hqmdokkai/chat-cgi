@@ -4,9 +4,6 @@ FROM python:3.9-slim
 # Tạo thư mục cho ứng dụng
 WORKDIR /usr/src/app
 
-# Sao chép các file HTML và CGI script vào thư mục làm việc
-COPY . /usr/src/app/
-
 # Tạo thư mục có quyền ghi
 RUN mkdir /usr/src/app/data && chmod 777 /usr/src/app/data
 

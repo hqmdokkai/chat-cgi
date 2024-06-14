@@ -1,18 +1,20 @@
-# Sử dụng Alpine Linux làm base image
-FROM alpine:latest
+# Sử dụng Python image chính thức làm base image
+FROM python:3.9-slim
 
-# Cài đặt Apache và các gói phụ trợ
-RUN apk --no-cache add apache2 python3
+# Tạo thư mục cho các CGI script
+WORKDIR /usr/src/app/cgi-bin
 
-# Bật module CGI của Apache
-RUN sed -i 's/#LoadModule cgid_module/LoadModule cgid_module/' /etc/apache2/httpd.conf
+# Sao chép các CGI script vào thư mục cgi-bin
+COPY cgi-bin/ /usr/src/app/cgi-bin/
 
-# Tạo thư mục cgi-bin và sao chép các tập tin CGI vào đó
-RUN mkdir /usr/lib/cgi-bin
-COPY cgi-bin/ /usr/lib/cgi-bin/
+# Tạo thư mục có quyền ghi
+RUN mkdir /usr/src/app/data && chmod 777 /usr/src/app/data
 
-# Thiết lập thư mục làm việc của Apache
-WORKDIR /var/www/localhost/htdocs
+# Cấp quyền thực thi cho các script CGI
+RUN chmod +x /usr/src/app/cgi-bin/*
 
-# Khởi động Apache
-CMD ["httpd", "-D", "FOREGROUND"]
+# Expose cổng 8000
+EXPOSE 8000
+
+# Chạy HTTP server với hỗ trợ CGI
+CMD ["python", "-m", "http.server", "8000", "--cgi"]
